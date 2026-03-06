@@ -515,4 +515,4 @@ This project is licensed under the **GNU General Public License v3.0**. See [LIC
 
 *TunnelVision: Because your AI deserves better than Ctrl+F.* 📺🐰
 
-*Built with ❤️ and way too much caffeine for the SillyTavern community*
+*Built with ❤️ and way too much caffeine and sugar to be healthy.*
