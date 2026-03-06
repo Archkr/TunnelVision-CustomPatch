@@ -7,7 +7,17 @@
 [![BunnyMo Compatible](https://img.shields.io/badge/BunnyMo-Compatible-pink.svg)](https://github.com/Coneja-Chibi/BunnyMo)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-green.svg)](LICENSE)
 
-*A [RoleCall](https://github.com/Coneja-Chibi) project by its Founder, built for the SillyTavern community as a proof of concept.* 🐇
+*A [RoleCall](https://github.com/Coneja-Chibi) project, built for the SillyTavern community as a proof of concept.* 🐇
+
+---
+
+### 💡 The Core Thesis
+
+> **When an AI has to make the active effort to retrieve information, to decide what it needs, go find it, and bring it back, it uses that information better.**
+
+Think about it. When RAG silently injects context into the prompt, the AI doesn't even know where it came from. It's just *there*. But when TunnelVision makes the AI *ask for* information, when it has to reason about what's relevant, navigate to it, and consciously retrieve it, the AI treats that information as something it *actively sought out*. It pays more attention. It integrates it more deliberately into its response. It's the difference between someone handing you a textbook page and you going to the library because you *needed* to know something.
+
+That's the philosophy. Your AI should *think* about what it knows, not just have things shoved into its context window and hope for the best. 🧠
 
 ---
 
@@ -92,16 +102,6 @@ TunnelVision is **bidirectional**. The AI reads *and writes*. It creates new ent
 
 RAG gives your AI a library card. TunnelVision makes your AI the librarian. 📚
 
-### 💡 The Core Thesis
-
-Here's the idea behind all of this, from [RoleCall](https://github.com/Coneja-Chibi)'s Founder:
-
-> **When an AI has to make the active effort to retrieve information, to decide what it needs, go find it, and bring it back, it uses that information better.**
-
-Think about it. When RAG silently injects context into the prompt, the AI doesn't even know where it came from. It's just *there*. But when TunnelVision makes the AI *ask for* information, when it has to reason about what's relevant, navigate to it, and consciously retrieve it, the AI treats that information as something it *actively sought out*. It pays more attention. It integrates it more deliberately into its response. It's the difference between someone handing you a textbook page and you going to the library because you *needed* to know something.
-
-That's the philosophy. Your AI should *think* about what it knows, not just have things shoved into its context window and hope for the best. 🧠
-
 ### 🤝 They're Not Mutually Exclusive
 
 Worth noting: **VectHare and TunnelVision can coexist.** VectHare excels at *chat history* retrieval, finding relevant past messages with temporal decay and conditional rules. TunnelVision excels at *lorebook* retrieval, letting the AI actively navigate and maintain your world knowledge. Use both if you want the best of both worlds.
@@ -172,7 +172,7 @@ Two ways the AI can browse, pick what works for your setup:
 | 📡 **Traversal** (default) | AI sees top-level channels → picks one → tunes deeper → picks again → retrieves entries. Step by step, like channel surfing. | Large lorebooks, deep trees |
 | 📋 **Collapsed** | Entire guide shown at once. AI picks channel IDs directly in one shot. Based on RAPTOR research. | Smaller lorebooks, faster retrieval |
 
-### 🛠️ **7 AI Tools** *(The Full Remote Control)*
+### 🛠️ **8 AI Tools** *(The Full Remote Control)*
 
 TunnelVision gives your AI a complete memory management toolkit. These register as **tool calls**, and the AI decides when and how to use them:
 
@@ -185,6 +185,7 @@ TunnelVision gives your AI a complete memory management toolkit. These register 
 | 📝 **Summarize** | Create scene/event summaries with significance levels | Important events happen: battles, confessions, discoveries |
 | 🔀 **Reorganize** | Move entries between channels, create new channels | Tree structure no longer fits the growing lorebook |
 | ✂️ **Merge/Split** | Combine related entries or split bloated ones | Two entries cover same topic, or one entry covers too many |
+| 📓 **Notebook** | Private AI scratchpad for plans, follow-ups, narrative threads | AI needs to track something tactical across turns without permanent lorebook storage |
 
 > **Your AI is the station manager.** It creates new programs, updates the schedule, cancels shows that jumped the shark, and writes episode recaps. Your lorebook evolves alongside your story. 📈
 
@@ -417,7 +418,7 @@ That's it. TunnelVision registers its tools automatically. Your AI will start us
 ### Per-Tool Toggles
 
 Every tool can be individually enabled/disabled in Advanced Settings:
-Search, Remember, Update, Forget, Summarize, Reorganize, Merge/Split
+Search, Remember, Update, Forget, Summarize, Reorganize, Merge/Split, Notebook
 
 ---
 
@@ -476,7 +477,7 @@ TunnelVision is modular by design. The index is lean, just the orchestrator wiri
 index.js          : Init, events, wiring (lean orchestrator)
 tree-store.js     : Tree data structure, CRUD, settings, serialization
 tree-builder.js   : Auto-build trees from lorebook metadata or LLM
-tool-registry.js  : ToolManager registration for all 7 tools
+tool-registry.js  : ToolManager registration for all 8 tools
 entry-manager.js  : Lorebook CRUD shared by all memory tools
 ui-controller.js  : Settings panel, tree editor, drag-and-drop
 diagnostics.js    : 30+ failure checks with auto-fixes
@@ -490,7 +491,8 @@ tools/
   ├── forget.js      : Disable/delete entries
   ├── summarize.js   : Scene/event summaries with arcs
   ├── reorganize.js  : Move entries, create channels
-  └── merge-split.js : Merge or split entries
+  ├── merge-split.js : Merge or split entries
+  └── notebook.js    : Private AI scratchpad (per-chat metadata)
 ```
 
 Every module has a single responsibility. Every potential failure point has a diagnostic check. No tech debt. 🧹
@@ -504,12 +506,6 @@ Every module has a single responsibility. Every potential failure point has a di
 - **Any Lorebook**: TunnelVision works with ANY lorebook format. It doesn't care what's inside the entries. It just organizes and retrieves them intelligently.
 
 ---
-
-## 📜 License
-
-This project is licensed under the **GNU General Public License v3.0**. See [LICENSE](LICENSE) for details.
-
-**TL;DR**: Use it, modify it, distribute it. But keep it open source and credit the original. 🤝
 
 ---
 
