@@ -1211,7 +1211,8 @@
 .tv-float-item-time {
     flex-shrink: 0;
     font-size: 9px;
-    color: var(--SmartThemeBorderColor, #555);
+    color: var(--SmartThemeBodyColor, #fff);
+    opacity: 0.7;
     padding-top: 2px;
 }
 

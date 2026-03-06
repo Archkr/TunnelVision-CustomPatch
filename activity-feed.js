@@ -10,6 +10,7 @@ import { getSettings, isLorebookEnabled } from './tree-store.js';
 
 const MAX_FEED_ITEMS = 50;
 const STORAGE_KEY_POS = 'tv-feed-trigger-position';
+const STORAGE_KEY_FEED = 'tv-feed-items';
 
 // Turn-level tool call accumulator for console summary
 /** @type {Array<{name: string, verb: string, summary: string}>} */
@@ -47,6 +48,7 @@ export function initActivityFeed() {
     if (feedInitialized) return;
     feedInitialized = true;
 
+    loadFeed();
     createTriggerButton();
     createPanel();
 
@@ -67,6 +69,26 @@ export function initActivityFeed() {
     if (event_types.MESSAGE_RECEIVED) {
         eventSource.on(event_types.MESSAGE_RECEIVED, printTurnSummary);
     }
+}
+
+// ── Persistence ──
+
+function saveFeed() {
+    try {
+        sessionStorage.setItem(STORAGE_KEY_FEED, JSON.stringify({ items: feedItems, nextId }));
+    } catch { /* quota exceeded or unavailable */ }
+}
+
+function loadFeed() {
+    try {
+        const raw = sessionStorage.getItem(STORAGE_KEY_FEED);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        if (Array.isArray(data.items)) {
+            feedItems = data.items;
+            nextId = typeof data.nextId === 'number' ? data.nextId : feedItems.length;
+        }
+    } catch { /* corrupted or unavailable */ }
 }
 
 // ── DOM Helpers ──
@@ -431,12 +453,14 @@ function trimFeed() {
     if (feedItems.length > MAX_FEED_ITEMS) {
         feedItems = feedItems.slice(0, MAX_FEED_ITEMS);
     }
+    saveFeed();
 }
 
 // ── Public API ──
 
 export function clearFeed() {
     feedItems = [];
+    saveFeed();
     if (triggerEl) triggerEl.setAttribute('data-tv-count', '0');
     if (panelEl?.classList.contains('open')) renderAllItems();
 }
@@ -450,37 +474,52 @@ export function getFeedItems() {
 function buildToolSummary(toolName, params, result) {
     switch (toolName) {
         case 'TunnelVision_Search': {
-            const query = params.query || params.category || '';
+            const action = params.action || 'navigate';
+            const reasoning = params.reasoning || '';
+            const nodeIds = params.node_ids || (params.node_id ? [params.node_id] : []);
             let count = '';
             try {
                 const parsed = JSON.parse(result);
-                if (Array.isArray(parsed)) count = ` -- ${parsed.length} entries`;
-                else if (parsed.entries) count = ` -- ${parsed.entries.length} entries`;
+                if (Array.isArray(parsed)) count = ` → ${parsed.length} entries`;
+                else if (parsed.entries) count = ` → ${parsed.entries.length} entries`;
             } catch { /* noop */ }
-            return query ? `"${truncate(query, 40)}"${count}` : `tree navigation${count}`;
+            if (reasoning) return `${truncate(reasoning, 50)}${count}`;
+            if (nodeIds.length > 0) return `${action} [${nodeIds.slice(0, 3).join(', ')}${nodeIds.length > 3 ? '...' : ''}]${count}`;
+            return `${action}${count}`;
         }
         case 'TunnelVision_Remember': {
-            const name = params.name || params.comment || params.key || '';
-            return name ? `"${truncate(name, 50)}"` : 'new entry';
+            const title = params.title || params.comment || params.name || params.key || '';
+            return title ? `"${truncate(title, 50)}"` : 'new entry';
         }
         case 'TunnelVision_Update': {
-            const target = params.name || params.uid || params.comment || '';
-            return target ? `"${truncate(String(target), 50)}"` : 'existing entry';
+            const title = params.title || params.comment || params.name || '';
+            const uid = params.uid;
+            if (title) return `"${truncate(title, 50)}"`;
+            return uid !== undefined ? `UID ${uid}` : 'existing entry';
         }
         case 'TunnelVision_Forget': {
-            const target = params.name || params.uid || '';
-            return target ? `"${truncate(String(target), 50)}"` : 'an entry';
+            const target = params.name || params.title || '';
+            const uid = params.uid;
+            if (target) return `"${truncate(target, 50)}"`;
+            return uid !== undefined ? `UID ${uid}` : 'an entry';
         }
-        case 'TunnelVision_Reorganize':
-            return params.action || 'tree structure';
+        case 'TunnelVision_Reorganize': {
+            const action = params.action || '';
+            const target = params.node_id || params.entry_uid || '';
+            if (action && target) return `${action} → ${truncate(String(target), 30)}`;
+            return action || 'tree structure';
+        }
         case 'TunnelVision_Summarize': {
             const scene = params.title || params.scene || '';
             return scene ? `"${truncate(scene, 50)}"` : 'scene summary';
         }
         case 'TunnelVision_MergeSplit': {
-            const action = params.action || '';
-            const target = params.entries || params.entry || params.name || '';
-            return action ? `${action} ${truncate(String(target), 40)}` : 'entries';
+            const action = params.action || 'merge';
+            const title = params.merged_title || params.new_title || '';
+            if (title) return `${action}: "${truncate(title, 40)}"`;
+            const uids = [params.keep_uid, params.remove_uid, params.uid].filter(u => u !== undefined);
+            if (uids.length > 0) return `${action} UIDs [${uids.join(', ')}]`;
+            return action;
         }
         case 'TunnelVision_Notebook': {
             const action = params.action || 'write';
