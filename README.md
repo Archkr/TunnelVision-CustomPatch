@@ -62,7 +62,7 @@
 - The Entries tab was empty for TunnelVision retrievals because it only tracked native WORLD_INFO_ACTIVATED events.
   Fix: changed the feed model so Entries includes both native activations and TunnelVision-injected entries in activity-feed.js and style.css.
 
-**Hide Mode / Tool Runtime**
+**Hide Mode / Tool Runtime** - **Still Fixing**
 - The Hide all tool calls from chat toggle was implemented by mapping TunnelVision to ST stealth, which caused only one tool call and then stopped recursion.
   Fix: removed ST stealth from TunnelVision tool registration and redefined the setting as visual chat hiding only in tool-registry.js, ui-controller.js, settings.html, and diagnostics.js.
 
